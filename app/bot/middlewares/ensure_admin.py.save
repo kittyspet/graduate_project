@@ -1,0 +1,45 @@
+from uuid import UUID
+from pybotx import *
+
+ADMIN_HUIDS = (UUID("f9610453-ed16-5397-98e6-bb16d13d7dd1"), #Орачев
+               UUID("5f2f3390-3407-5db7-bed8-a3dd31b706ad"), #Забелин
+               UUID("a445ef7a-f314-5eae-b3d6-80956a469523"), #Пахоменко
+               UUID("027cb665-f0b1-5d73-adaf-0b63ad0da9f3"), #Кузнецов
+               UUID("2a897788-44cc-5ad3-bca0-a329ce6c7019"), #Грубич
+               UUID("6cde8cd4-f674-57a6-8ad1-de9e9e7d0c50"), #Богинский
+               UUID("68d1ff1d-eadd-5b35-b53c-37f6e5e3b18b"), #Прутковский
+               UUID("a445ef7a-f314-5eae-b3d6-80956a469523"), #Пахоменко
+               UUID("14289d59-c67b-55b3-8d89-cd8827abd752"), #Будаев
+               UUID("c9aa320f-2d4f-5429-a5a4-b2970f13197f"), #Нестеров
+               UUID("61d00d8e-941a-5c96-84e1-5c20ef518322"), #Ковалева
+               UUID("f6702bef-855c-5678-9b1f-ac69019cca4f"), #Приданников
+               UUID("6685eca5-757c-5697-ba76-4cb3fe17a1a5"), #Лабурцев
+               UUID("c2b1d52b-e632-501b-a7e4-839c7446db24"), #Долотовский
+               UUID("998aeab1-2358-52d2-9469-873fe6297689"), #Борисенко
+               UUID("0ea2526f-1d7e-596f-87f7-7bf222ae5232"), #Татевосян
+               UUID("f8778d4e-fc7a-5859-88b3-020e096bc4e5"), #Чжан
+               UUID("cc6f7aa4-99f5-5c7e-9bc6-a52dcb9304e5"), #Чесноков
+               UUID("78d38e81-28db-5d0d-ad10-031ce8ef1d70"), #Рыбин
+               UUID("83c2530a-867f-5e7d-9a91-1e63b5d53470"), #Кубасов
+               UUID("6dbcfa51-e4b7-53a2-a792-b61f8c370748"), #Краснов
+               UUID("9f75fbfa-5261-54da-b655-2f04c905b484"), #Ханчич
+               UUID("2269c856-5de9-585d-8ba0-7ea729b605a2"), #Павлова
+               UUID("ca885579-7405-52b9-917a-d1c305ba13a8"), #Гладченко
+               UUID("4e75f043-6eba-50d2-8822-474e164c8a9b"), #Светлов
+               UUID("4807be0f-93ac-5be6-a143-d1d70d3a3e82"), #Вепрев
+               UUID("c66d9d84-7c3f-5471-9b21-9c44dc3b52a8"), #Сергунов
+               UUID("1f23113c-20da-5ca0-a991-28988162058a"), #Сойнов
+               UUID("f65136f4-917d-58e1-8e6d-9d724798d647"), #Алексеев
+               UUID("d96663c1-5fe8-56e9-85b5-c961b9353421"), #Долотовский2
+               
+               )
+
+async def ensure_admin_middleware(
+    message: IncomingMessage, 
+    bot: Bot,
+    call_next: IncomingMessageHandlerFunc,
+) -> None:
+    if message.sender.huid not in ADMIN_HUIDS:
+        await bot.answer_message("У вас нет доступа к этой команде бота. Доступ на функционал чат-бота должен быть согласован с проектным офисом.")
+        return
+    await call_next(message, bot)

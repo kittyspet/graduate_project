@@ -1,0 +1,139 @@
+"""Handlers for default bot commands and system events."""
+
+from os import environ
+from subprocess import PIPE, STDOUT, run
+import aiofiles
+import asyncio
+from app.bot.middlewares.ensure_admin import ensure_admin_middleware
+from app.bot.middlewares.smart_logger import smart_logger_middleware
+
+
+from pybotx import (
+    Bot,
+    BubbleMarkup,
+    ChatCreatedEvent,
+    HandlerCollector,
+    IncomingMessage,
+    StatusRecipient,
+    OutgoingAttachment,
+)
+
+from app.resources import strings
+
+collectorAuth = HandlerCollector(middlewares=[ensure_admin_middleware])
+collector = HandlerCollector()
+
+
+
+@collector.default_message_handler
+async def default_handler(
+    message: IncomingMessage,
+    bot: Bot,
+) -> None:
+    """Run if command handler not found."""
+
+    await bot.answer_message("Извините, команда неясна. Воспользуйтесь меню.")
+
+
+@collectorAuth.chat_created
+async def chat_created_handler(event: ChatCreatedEvent, bot: Bot) -> None:
+    """Send a welcome message and the bot functionality in new created chat."""
+
+    answer_body = strings.CHAT_CREATED_TEMPLATE.format(
+        bot_project_name=strings.BOT_DISPLAY_NAME
+    )
+    bubbles = BubbleMarkup()
+    bubbles.add_button(command="/start", label="Начать")
+
+    await bot.answer_message(answer_body, bubbles=bubbles)
+
+@collectorAuth.command("/start", description="Начало работы")
+async def send_image_handler(message: IncomingMessage, bot: Bot) -> None:
+    bubbles = BubbleMarkup()
+    bubbles.add_button(
+        command="/sendSJ", 
+        label="Отчёт по SJ-100", 
+        data={"pill": "red"}, 
+        background_color="##4169E1"
+    )
+    
+    bubbles.add_button(
+        command="/sendMC", 
+        label="Отчёт по MC-21", 
+        data={"pill": "blue"}, 
+        background_color="#4169E1", 
+        new_row=False
+    )
+    await bot.answer_message("Привет! 
+Это бот-демонстратор интеграции с Advanta.                             bubbles=bubbles)
+    await bot.answer_message("Привет! \nЭто бот-демонстратор интеграции с Advanta.")
+
+    await bot.enable_stealth(
+        bot_id = message.bot.id,
+        chat_id = message.chat.id,
+        total_ttl = 60,
+        ttl_after_read = 30
+        )
+
+
+
+@collectorAuth.command("/help", description="Получить доступные команды")
+async def help_handler(message: IncomingMessage, bot: Bot) -> None:
+    """Show commands list."""
+
+    status_recipient = StatusRecipient.from_incoming_message(message)
+
+    status = await bot.get_status(status_recipient)
+    command_map = dict(sorted(status.items()))
+
+    answer_body = "\n".join(
+        f"`{command}` -- {description}" for command, description in command_map.items()
+    )
+
+    await bot.answer_message(answer_body)
+
+
+@collectorAuth.command("/_debug:git-commit-sha", visible=False)
+async def git_commit_sha(message: IncomingMessage, bot: Bot) -> None:
+    """Show git commit SHA."""
+
+    await bot.answer_message(environ.get("GIT_COMMIT_SHA", "<undefined>"))
+
+
+@collectorAuth.command("/_debug:version", visible=False)
+async def build_version(message: IncomingMessage, bot: Bot) -> None:
+    """Show app version."""
+    cmd = "poetry version --short"
+    output = run(cmd.split(), stdout=PIPE, stderr=STDOUT, text=True).stdout
+    await bot.answer_message(output.strip("\n"))
+
+@collectorAuth.command("/sendSJ", description="Сформировать мастер-план по проекту SJ-100")
+async def send_image_handler(message: IncomingMessage, bot: Bot) -> None:
+    image_path = "/media/SJ.jpg"
+    await bot.answer_message("Запрошен отчёт \"Мастер-план по проекту SJ-100\". \nПожалуйста, подождите...")
+    await asyncio.sleep(5)
+    async with aiofiles.open(image_path, "rb") as image_file:
+        file = await OutgoingAttachment.from_async_buffer(image_file, "SJ_report.jpg")
+        await bot.enable_stealth(
+        bot_id = message.bot.id,
+        chat_id = message.chat.id,
+        total_ttl = 60,
+        ttl_after_read = 30
+        )
+        await bot.answer_message(body="Отчёт сформирован успешно:",file=file)
+
+@collectorAuth.command("/sendMC", description="Сформировать мастер-план по проекту МС-21")
+async def send_image_handler(message: IncomingMessage, bot: Bot) -> None:
+    image_path = "/media/MC-21.jpg"
+    await bot.answer_message("Запрошен отчёт \"Мастер-план по проекту MC-21\". \nПожалуйста, подождите...")
+    
+    async with aiofiles.open(image_path, "rb") as image_file:
+        file = await OutgoingAttachment.from_async_buffer(image_file, "MC_report.jpg")
+        
+        await bot.enable_stealth(
+        bot_id = message.bot.id,
+        chat_id = message.chat.id,
+        total_ttl = 60,
+        ttl_after_read = 30
+        )
+        await bot.answer_message(body="Отчёт сформирован успешно:",file=file)
