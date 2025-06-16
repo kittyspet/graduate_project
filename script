@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#docker cp /home/botTemplate/test_bot-fix/attachment/feedback/user_messages.txt test_bot-fix:/media/user_messages.txt
+#chown -R root/root /media/user_messages.txt
+
+#Мастер план
+docker cp /home/botTemplate/bot-fix/attachment/image/SJ.png bot-fix:/media/SJ.png
+docker cp /home/botTemplate/bot-fix/attachment/image/MC.png bot-fix:/media/MC.png
+docker cp /home/botTemplate/bot-fix/attachment/image/testMC.png bot-fix:/media/testMC.png
+
+docker cp /home/botTemplate/bot-fix/attachment/data_report/dataMC.json bot-fix:/media/dataMC.json
+docker cp /home/botTemplate/bot-fix/attachment/data_report/dataSJ.json bot-fix:/media/dataSJ.json
+
+
+docker cp /home/botTemplate/bot-fix/attachment/data_report/milestones/. bot-fix:/media/.
+
+#docker cp /home/botTemplate/bot-fix/attachment/image/COS1.pdf bot-fix:/media/COS1.pdf
+#docker cp /home/botTemplate/bot-fix/attachment/image/COS2.png bot-fix:/media/COS2.png
+
